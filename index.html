@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Are the networks different?</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Margaret Janiczek" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+
+
+
+
+class: inverse, left, middle
+
+
+
+
+
+# But are the networks different? 
+
+### Using Differential Network Analysis Software with Metabolite Data
+
+#### COMETS Early Career Investigator Group Meeting: October 11, 2022
+
+
+#### Margaret Janiczek
+
+PhD Student, Biostatistics
+
+&lt;img src="UMasslong.png" width="25%" /&gt;
+
+
+
+
+
+
+
+
+
+---
+
+
+
+# Motivation
+
+- Identifying networks in biomedical data, and how they differ across populations, can help find drivers of disease and targets for treatment
+
+&lt;img src="difnet_overview.png" width="75%" /&gt;
+
+- Certain biomedical research questions lend themselves well to network/pathway analysis
+
+    - Data from brain scans (Alzheimer's patient scans over time)
+    - Gene expression (cancer vs normal tissue)
+    - Microbiome (Crohn's disease vs Healthy Control)
+    - Metabolomics - any applications from the group here?
+    
+---
+# Motivation
+
+.pull-left[
+&lt;img src="diffnet_ex1.png" width="75%" /&gt;
+]
+
+.pull-left[
+&lt;img src="diffnet_ex2.png" width="75%" /&gt;
+
+.small[- From study using DiNA to reveal metabolic determinants associated with mortality in acute myocardial infarction patients (Vignoli et al 2020)
+
+- A: metabolite network from survivors. B: Metabolite Network from Deceased. C: Difference in connectivity vs p-value (Bonferroni adjusted)]
+]
+
+
+
+
+---
+
+# Presentation Overview
+
+- Background on graphical models and differential networks
+
+- Overview of statistical landscape for differential network analysis
+
+- Overview of available software
+
+- Brief practical application using a few software options
+
+- Discussion &amp; feedback!
+
+???
+- My goal is to give you an overview of the statistical and software landscape, as well as a few applied examples. 
+
+- I'm working on a writing a full tutorial geared toward helping applied researchers implement these methods - I look forward to your feedback! 
+
+---
+
+# Background: Undirected Graphical Model
+
+- Graphical models express connections between variables. When undirected, the connection doesn't imply any directionality.
+
+&lt;img src="graph.png" width="75%" /&gt;
+
+
+- Connected edges can be seen in a **Precision Matrix**, where anything with a zero is considered "conditionally independent"
+
+- In this example, A and B are **conditionally independent** of D
+
+---
+
+# Background: Gaussian Graphical Model
+
+- If we can assume the data are normally distributed, the **Precision Matrix** can be estimated using the inverse of the correlation matrix!
+
+- High dimensional data can be handled by adding shrinkage penalties which will force values down to zero. 
+
+- There are many other estimation details I won't go into here. 
+
+- See Kate Shutta's recently published tutorial on Gaussian Graphical Models for details! &lt;a name=cite-shutta_balasubramanian_tutorial&gt;&lt;/a&gt;[[Shu+22](#bib-shutta_balasubramanian_tutorial)]
+
+
+
+---
+
+# More than one graphical model
+
+- Say you have data from two groups, like disease and healthy control.
+
+- Say you estimate a graphical model for each group, then want to compare the resulting networks.
+
+
+&lt;img src="diffnet.png" width="50%" /&gt;
+
+---
+
+# But are the networks different??
+
+- How do you estimate them?
+
+- How do you test the difference? 
+
+- How do you even *characterize* the difference? (edges? nodes? hubs? general structure?)
+
+- This all falls under DIFFERENTIAL NETWORK ANALYSIS! (DiNA)
+
+&lt;img src="diffnet.png" width="50%" /&gt;
+
+---
+
+
+class: inverse, center, middle
+# Statistical Landscape of DiNA methods
+
+
+---
+# Timeline 
+
+- I found 40+ methods papers on DiNA methods published in the last 10 years
+
+- The wide variety is due to addressing many subtly different problems
+
+&lt;img src="alg_timeline.png" width="100%" /&gt;
+
+???
+- In 2011, Guo et al. published the work “Joint estimation of multiple graphs” &lt;a name=cite-guo_joint_2011&gt;&lt;/a&gt;[[Guo+11](#bib-guo_joint_2011)], which was followed by several new methods to estimate and test differences in biological networks &lt;a name=cite-cai_constrained_2011&gt;&lt;/a&gt;[[CLL11](#bib-cai_constrained_2011)] &lt;a name=cite-mohan_structured_2012&gt;&lt;/a&gt;[[Moh+12](#bib-mohan_structured_2012)] &lt;a name=cite-jacob_more_2012&gt;&lt;/a&gt;[[JND12](#bib-jacob_more_2012)]
+
+- Danaher et al. introduced group graphical lasso (GGL) and fused graphical lasso (FGL) in 2014 &lt;a name=cite-danaher_joint_2014&gt;&lt;/a&gt;[[DWW14](#bib-danaher_joint_2014)], which was closely followed by other groups proposing direct estimation of the differences between graphs &lt;a name=cite-zhao_direct_2014&gt;&lt;/a&gt;[[ZCL14](#bib-zhao_direct_2014)], efficient structural estimation of multiple graphs , and node-based learning of differential graphs &lt;a name=cite-mohan_node-based_2014&gt;&lt;/a&gt;[[Moh+14](#bib-mohan_node-based_2014)]
+
+- Peterson, Stingo, and Vanucci introduced Bayesian inference for multiple graphical models in 2015 &lt;a name=cite-peterson_bayesian_2015&gt;&lt;/a&gt;[[PSV15](#bib-peterson_bayesian_2015)]. Subsequent Bayesian methods developed priors that account for the high dimensionality and sparsity common in biological data  &lt;a name=cite-tan_bayesian_2017&gt;&lt;/a&gt;[[Tan+17](#bib-tan_bayesian_2017)] &lt;a name=cite-richard_li_bayesian_2019&gt;&lt;/a&gt;[[RMC19](#bib-richard_li_bayesian_2019)] &lt;a name=cite-sekula_single-cell_2021&gt;&lt;/a&gt;[[SGD21](#bib-sekula_single-cell_2021)]
+
+
+
+---
+# Why so many methods?
+
+To address various data and modeling situations!
+--
+.pull-left[
+What's your data like?
+&lt;img src="proscons.png" width="80%" /&gt;
+]
+
+--
+.pull-right[
+Other model considerations...
+&lt;img src="specifications.png" width="80%" /&gt;
+]
+
+???
+    - Is data Gaussian vs non Gaussian?
+    - High dimensional vs low dimensional?
+    - Do you want to use Frequentist vs Bayesian framework?
+    - Is there local common structure or group-wise heterogeneous structure?
+    - Do you need to estimate on 3+ groups? 
+    - Are precision matrices sparse or not?
+
+- You can further narrow down specific methods based on if you care about:
+
+    - Hierarchical structure
+    - Additional penalties or weighted penalties for unbalanced groups
+    - Possibility to cluster and estimate GMs simultaneously
+    - Computational efficiency
+    - Incorporating known network structure or latent variables
+
+---
+class: inverse, center, middle
+&lt;img src="quantifydif.png" width="80%" /&gt;
+---
+
+# Quantifying "difference": Local Structure
+
+&lt;img src="diffnet_localstruc.png" width="90%" /&gt;
+
+---
+
+# Quantifying "difference": Global Structure
+
+&lt;img src="diffnet_global_structure.png" width="90%" /&gt;
+
+---
+class: inverse, center, middle
+
+# And finally... test the difference
+
+---
+
+#For evaluating local difference: 
+
+- Can do things like test each node for local structure difference (i.e. test each metabolite for "Degree" or "Node Strength" or "Betweenness Centrality")  
+
+- Various p-value options, e.g. permutation  
+
+- Adjust for multiple testing!! Bonferoni for conservative estimate, FDR for less stringent. 
+
+---
+
+# For evaluating global difference:
+
+- Can do visualization (`iGraph`) and describe global structural differences (e.g. Density, modularity)
+
+- Can perform global hypothesis test H0: `\(\Sigma_1 = \Sigma_2\)` vs H1: `\(\Sigma_1 \neq \Sigma_2\)`
+
+- For low-dimensional data this is simpler (e.g. `covTestR` package)
+
+- For high-dimensional data use method proposed by Li &amp; Chen 2012
+    
+
+---
+
+
+
+class: inverse, center, middle
+# Software Landscape of DiNA methods
+
+
+---
+# Overview DiNA software landscape
+
+- I found 26 different R packages and 2 Python packages that implement a variety of subtly different DiNA algorithms/pipelines
+
+
+&lt;img src="timeline.png" width="70%" /&gt;
+---
+# Notes on software
+
+- `JGL`, `iDingo`, `rags2ridges`, and `SpiecEasy` seem to be most popular and cited.
+
+- I have a full tutorial for `JGL` posted on my [GitHub](https://mljaniczek.github.io/jgl-tutorial/), and Kate has one available for `iDingo`. 
+
+- Currently working making tutorials for for `rags2ridges`, `Spiec-Easy` and will work through the other available methods
+
+
+---
+# Placeholder for JGL example
+
+- JGL package runs Fused Graphical Lasso (FGL) and Group Graphical Lasso from Danaher et al 2014
+
+- Estimates sparse covariance matrices that are *similar* across classes
+
+- Has a lot of useful functions to analyze the networks after estimating them, for example extracting hubs, edges, degree etc. 
+
+- Graphical lasso uses L1 penalty, which encourages sparsity and as a result selects edges in the graph in the process of estimating precision matrix
+
+---
+# Placeholder for rags2ridges example
+
+- `rags2ridges` is great for p &gt;&gt;&gt; n settings. Uses L2-penalized estimation of precision matrices
+
+- Useful when classes are believed to share most of the same structure
+
+- Graphical ridge uses L2 penalty which doesn't shrink things down to zero, so you select edges AFTER estimating the precision matrix. Can be useful if there's a lot of colinearity 
+
+- As a side note this package is nicely written with some fun easter eggs hidden in
+
+
+---
+# Placeholder for Spiec-Easy example 
+
+
+---
+# Placeholder for iDingo example
+
+---
+# Placeholder for iGraph overview
+
+---
+
+# Questions for the group
+
+- What do you find helpful in a tutorial or when identifying methods to use? 
+
+- I propose to both use simulated data (under various conditions referenced above) and several real-world datasets with all the software. 
+
+---
+
+
+--- 
+# Takeaways
+
+- DiNA has potential to be a useful tool in biomedical research 
+
+- There are many ways to customize the estimation and testing process to fit research question and data types
+
+- However the broad landscape of methods and software and the current lack of practical applied tutorials comparing software methods seems like a barrier to widespread use
+
+- I'm working on trying to bridge the gap between statistical methodology and applied researchers! Full tutorial forthcoming! 
+
+---
+# Questions &amp; Comments?
+
+---
+# Thank you!
+
+- Dr. Raji Balasubramanian &amp; [Balasubramanian Lab](https://raji-lab.github.io/)
+
+- Dr. Kate Hoff Shutta
+
+
+
+.small[.footnote[Github: @mljaniczek &lt;br&gt; Website: mljaniczek.github.io/ &lt;br&gt; Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).]]
+
+
+---
+# References
+
+&lt;a name=bib-cai_constrained_2011&gt;&lt;/a&gt;[Cai, T., W. Liu, and X.
+Luo](#cite-cai_constrained_2011) (2011). "A Constrained ℓ1 Minimization
+Approach to Sparse Precision Matrix Estimation". In: _Journal of the
+American Statistical Association_ 106.494. Publisher: Taylor &amp; Francis
+\_ eprint: https://doi.org/10.1198/jasa.2011.tm10155, pp. 594-607.
+ISSN: 0162-1459. DOI:
+[10.1198/jasa.2011.tm10155](https://doi.org/10.1198%2Fjasa.2011.tm10155).
+URL:
+[https://doi.org/10.1198/jasa.2011.tm10155](https://doi.org/10.1198/jasa.2011.tm10155)
+(visited on Aug. 18, 2022).
+
+&lt;a name=bib-danaher_joint_2014&gt;&lt;/a&gt;[Danaher, P., P. Wang, and D. M.
+Witten](#cite-danaher_joint_2014) (2014). "The joint graphical lasso
+for inverse covariance estimation across multiple classes". In: _J R
+Stat Soc Series B Stat Methodol_ 76.2, pp. 373-397. ISSN: 1369-7412.
+DOI: [10.1111/rssb.12033](https://doi.org/10.1111%2Frssb.12033).
+
+&lt;a name=bib-guo_joint_2011&gt;&lt;/a&gt;[Guo, J., E. Levina, G. Michailidis, et
+al.](#cite-guo_joint_2011) (2011). "Joint estimation of multiple
+graphical models". In: _Biometrika_ 98.1, pp. 1-15. ISSN: 0006-3444.
+DOI:
+[10.1093/biomet/asq060](https://doi.org/10.1093%2Fbiomet%2Fasq060).
+
+&lt;a name=bib-jacob_more_2012&gt;&lt;/a&gt;[Jacob, L., P. Neuvial, and S.
+Dudoit](#cite-jacob_more_2012) (2012). "More power via graph-structured
+tests for differential expression of gene networks". In: _The Annals of
+Applied Statistics_ 6.2. Publisher: Institute of Mathematical
+Statistics, pp. 561-600. ISSN: 1932-6157, 1941-7330. DOI:
+[10.1214/11-AOAS528](https://doi.org/10.1214%2F11-AOAS528). URL:
+[https://projecteuclid.org/journals/annals-of-applied-statistics/volume-6/issue-2/More-power-via-graph-structured-tests-for-differential-expression-of/10.1214/11-AOAS528.full](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-6/issue-2/More-power-via-graph-structured-tests-for-differential-expression-of/10.1214/11-AOAS528.full)
+(visited on Aug. 18, 2022).
+
+&lt;a name=bib-mohan_structured_2012&gt;&lt;/a&gt;[Mohan, K., M. J. Chung, S. Han,
+et al.](#cite-mohan_structured_2012) (2012). "Structured Learning of
+Gaussian Graphical Models". In: _Adv Neural Inf Process Syst_ 2012, pp.
+629-637. ISSN: 1049-5258. URL:
+[https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4211023/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4211023/)
+(visited on Aug. 11, 2022).
+
+&lt;a name=bib-mohan_node-based_2014&gt;&lt;/a&gt;[Mohan, K., P. London, M. Fazel,
+et al.](#cite-mohan_node-based_2014) (2014). "Node-Based Learning of
+Multiple Gaussian Graphical Models". In: _J Mach Learn Res_ 15.1, pp.
+445-488. ISSN: 1532-4435. URL:
+[https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4193819/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4193819/)
+(visited on Aug. 26, 2022).
+
+&lt;a name=bib-peterson_bayesian_2015&gt;&lt;/a&gt;[Peterson, C. B., F. C. Stingo,
+and M. Vannucci](#cite-peterson_bayesian_2015) (2015). "Bayesian
+Inference of Multiple Gaussian Graphical Models". In: _J Am Stat Assoc_
+110.509, pp. 159-174. ISSN: 0162-1459. DOI:
+[10.1080/01621459.2014.896806](https://doi.org/10.1080%2F01621459.2014.896806).
+
+&lt;a name=bib-richard_li_bayesian_2019&gt;&lt;/a&gt;[Richard Li, Z., T. H.
+McCormick, and S. J. Clark](#cite-richard_li_bayesian_2019) (2019).
+"Bayesian Joint Spike-and-Slab Graphical Lasso". In: _Proc Mach Learn
+Res_ 97, pp. 3877-3885. ISSN: 2640-3498. URL:
+[https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7845917/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7845917/)
+(visited on Aug. 26, 2022).
+
+&lt;a name=bib-sekula_single-cell_2021&gt;&lt;/a&gt;[Sekula, M., J. Gaskins, and S.
+Datta](#cite-sekula_single-cell_2021) (2021). "Single-Cell Differential
+Network Analysis with Sparse Bayesian Factor Models". In: _Front Genet_
+12, p. 810816. ISSN: 1664-8021. DOI:
+[10.3389/fgene.2021.810816](https://doi.org/10.3389%2Ffgene.2021.810816).
+
+&lt;a name=bib-shutta_balasubramanian_tutorial&gt;&lt;/a&gt;[Shutta, K. H., R. De
+Vito, D. M. Scholtens, et al.](#cite-shutta_balasubramanian_tutorial)
+(2022). "Gaussian Graphical Models with Applications to Omics
+Analyses". In: _Statistics in Medicine_.
+
+&lt;a name=bib-tan_bayesian_2017&gt;&lt;/a&gt;[Tan, L. S. L., A. Jasra, M. D.
+Iorio, et al.](#cite-tan_bayesian_2017) (2017). "Bayesian inference for
+multiple Gaussian graphical models with application to metabolic
+association networks". In: _The Annals of Applied Statistics_ 11.4.
+Publisher: Institute of Mathematical Statistics, pp. 2222-2251. ISSN:
+1932-6157, 1941-7330. DOI:
+[10.1214/17-AOAS1076](https://doi.org/10.1214%2F17-AOAS1076). URL:
+[https://projecteuclid.org/journals/annals-of-applied-statistics/volume-11/issue-4/Bayesian-inference-for-multiple-Gaussian-graphical-models-with-application-to/10.1214/17-AOAS1076.full](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-11/issue-4/Bayesian-inference-for-multiple-Gaussian-graphical-models-with-application-to/10.1214/17-AOAS1076.full)
+(visited on Aug. 11, 2022).
+
+&lt;a name=bib-zhao_direct_2014&gt;&lt;/a&gt;[Zhao, S. D., T. T. Cai, and H.
+Li](#cite-zhao_direct_2014) (2014). "Direct estimation of differential
+networks". In: _Biometrika_ 101.2, pp. 253-268. ISSN: 0006-3444. DOI:
+[10.1093/biomet/asu009](https://doi.org/10.1093%2Fbiomet%2Fasu009).
+URL:
+[https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4443936/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4443936/)
+(visited on Aug. 26, 2022).
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
