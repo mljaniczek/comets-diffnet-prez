@@ -65,13 +65,6 @@ knitr::include_graphics("UMasslong.png")
 ```
 
 
-
-
-
-
-
-
-
 ---
 
 ```{r echo = FALSE }
@@ -98,28 +91,6 @@ knitr::include_graphics("difnet_overview.png")
     - Metabolomics - any applications from the group here?
     
 ---
-# Motivation
-
-.pull-left[
-```{r out.width = '75%', echo = FALSE}
-knitr::include_graphics("diffnet_ex1.png")
-```
-]
-
-.pull-left[
-```{r out.width = '75%', echo = FALSE}
-knitr::include_graphics("diffnet_ex2.png")
-```
-
-.small[- From study using DiNA to reveal metabolic determinants associated with mortality in acute myocardial infarction patients (Vignoli et al 2020)
-
-- A: metabolite network from survivors. B: Metabolite Network from Deceased. C: Difference in connectivity vs p-value (Bonferroni adjusted)]
-]
-
-
-
-
----
 
 # Presentation Overview
 
@@ -140,33 +111,39 @@ knitr::include_graphics("diffnet_ex2.png")
 
 ---
 
-# Background: Undirected Graphical Model
+# Background: Graphical Model
 
 - Graphical models express connections between variables. When undirected, the connection doesn't imply any directionality.
 
-```{r out.width = '75%', echo = FALSE}
+```{r out.width = '70%', echo = FALSE}
 #![](UMass.png)
 knitr::include_graphics("graph.png")
 
 ```
 
 
-- Connected edges can be seen in a **Precision Matrix**, where anything with a zero is considered "conditionally independent"
+- Connected edges can be seen in an **Adjacency Matrix**, where anything with a zero is considered "conditionally independent"
 
 - In this example, A and B are **conditionally independent** of D
 
+
 ---
 
-# Background: Gaussian Graphical Model
+# Gaussian Graphical Model
 
-- If we can assume the data are normally distributed, the **Precision Matrix** can be estimated using the inverse of the correlation matrix!
+- Gaussian Graphical Models (GGMs) are the most widely used probabilistic graphical models (See Kate Shutta's recently published tutorial on GGMs for full details! `r Cite(bib, "shutta_balasubramanian_tutorial")`)
 
-- High dimensional data can be handled by adding shrinkage penalties which will force values down to zero. 
+- Assume data $\mathbf{x}$ is distributed as multivariate Gaussian $N(\mu, \Sigma)$ with mean vector $\mathbf{\mu}$ and precision matrix $\Sigma^{-1} = \Theta$ whose entries correspond to partial correlation between variables
 
-- There are many other estimation details I won't go into here. 
+- So any two entries are conditionally independent if entry in $\Theta$ is zero. 
 
-- See Kate Shutta's recently published tutorial on Gaussian Graphical Models for details! `r Cite(bib, "shutta_balasubramanian_tutorial")`
+- In low dimensional seeting, the Likelihood function:
 
+  $$l(\Theta; S) = ln|\Theta| - tr(S\Theta)$$
+
+- Where $\Theta = \Sigma^{-1}$ is the "precision matrix" and $S$ is sample covariance matrix. 
+
+- We want an estimate for this which we will call $P = S^{-1}$
 
 
 ---
@@ -209,8 +186,6 @@ knitr::include_graphics("diffnet.png")
 
 ```{r child='03_software.Rmd'}
 ```
-
-
 --- 
 # Takeaways
 

@@ -38,13 +38,6 @@ PhD Student, Biostatistics
 &lt;img src="UMasslong.png" width="25%" /&gt;
 
 
-
-
-
-
-
-
-
 ---
 
 
@@ -62,24 +55,6 @@ PhD Student, Biostatistics
     - Microbiome (Crohn's disease vs Healthy Control)
     - Metabolomics - any applications from the group here?
     
----
-# Motivation
-
-.pull-left[
-&lt;img src="diffnet_ex1.png" width="75%" /&gt;
-]
-
-.pull-left[
-&lt;img src="diffnet_ex2.png" width="75%" /&gt;
-
-.small[- From study using DiNA to reveal metabolic determinants associated with mortality in acute myocardial infarction patients (Vignoli et al 2020)
-
-- A: metabolite network from survivors. B: Metabolite Network from Deceased. C: Difference in connectivity vs p-value (Bonferroni adjusted)]
-]
-
-
-
-
 ---
 
 # Presentation Overview
@@ -101,29 +76,35 @@ PhD Student, Biostatistics
 
 ---
 
-# Background: Undirected Graphical Model
+# Background: Graphical Model
 
 - Graphical models express connections between variables. When undirected, the connection doesn't imply any directionality.
 
-&lt;img src="graph.png" width="75%" /&gt;
+&lt;img src="graph.png" width="70%" /&gt;
 
 
-- Connected edges can be seen in a **Precision Matrix**, where anything with a zero is considered "conditionally independent"
+- Connected edges can be seen in an **Adjacency Matrix**, where anything with a zero is considered "conditionally independent"
 
 - In this example, A and B are **conditionally independent** of D
 
+
 ---
 
-# Background: Gaussian Graphical Model
+# Gaussian Graphical Model
 
-- If we can assume the data are normally distributed, the **Precision Matrix** can be estimated using the inverse of the correlation matrix!
+- Gaussian Graphical Models (GGMs) are the most widely used probabilistic graphical models (See Kate Shutta's recently published tutorial on GGMs for full details! &lt;a name=cite-shutta_balasubramanian_tutorial&gt;&lt;/a&gt;[[Shu+22](#bib-shutta_balasubramanian_tutorial)])
 
-- High dimensional data can be handled by adding shrinkage penalties which will force values down to zero. 
+- Assume data `\(\mathbf{x}\)` is distributed as multivariate Gaussian `\(N(\mu, \Sigma)\)` with mean vector `\(\mathbf{\mu}\)` and precision matrix `\(\Sigma^{-1} = \Theta\)` whose entries correspond to partial correlation between variables
 
-- There are many other estimation details I won't go into here. 
+- So any two entries are conditionally independent if entry in `\(\Theta\)` is zero. 
 
-- See Kate Shutta's recently published tutorial on Gaussian Graphical Models for details! &lt;a name=cite-shutta_balasubramanian_tutorial&gt;&lt;/a&gt;[[Shu+22](#bib-shutta_balasubramanian_tutorial)]
+- In low dimensional seeting, the Likelihood function:
 
+  `$$l(\Theta; S) = ln|\Theta| - tr(S\Theta)$$`
+
+- Where `\(\Theta = \Sigma^{-1}\)` is the "precision matrix" and `\(S\)` is sample covariance matrix. 
+
+- We want an estimate for this which we will call `\(P = S^{-1}\)`
 
 
 ---
@@ -156,9 +137,8 @@ PhD Student, Biostatistics
 
 class: inverse, center, middle
 # Statistical Landscape of DiNA methods
-
-
 ---
+
 # Timeline 
 
 - I found 40+ methods papers on DiNA methods published in the last 10 years
@@ -183,13 +163,45 @@ To address various data and modeling situations!
 --
 .pull-left[
 What's your data like?
-&lt;img src="proscons.png" width="80%" /&gt;
+&lt;img src="proscons.png" width="70%" /&gt;
 ]
 
---
 .pull-right[
 Other model considerations...
-&lt;img src="specifications.png" width="80%" /&gt;
+&lt;img src="specifications.png" width="70%" /&gt;
+]
+
+---
+# DiNA Methods Summary
+
+.small[
+- Gaussian: 
+  - Graphical Lasso: JGL (Guo 2011)
+      - Additional penalties for encouraging similar sparsity across groups: FGL &amp; GGL (Danaher 2014)
+            - Incorporating structural information: JSEM (Ma 2016)
+                - Extension which doesn't require post-processing: jewel (Angelini 2021)
+            - Doesn't require sparse inputs: DTrace (Yuan 2017)
+                - Extension for multi-modal data: pDNA (Zhang 2017)
+      - Node-based learning framework: PNJGL (Mohan 2014)
+      - Unbalanced groups: JAGL (Shan 2018)
+      - Hierarchical structure: JWLGL (Shan 2020)
+  - Graphical Ridge: TFRE (Bilgrau 2020)
+  - Adjust for global conditional dependencies to identify "driver" group-specific components: Dingo (Ha 2015)
+  - Group-wise heterogeneous structure: LASICH (Saegusa 2016)
+  - Direct estimation of difference: Zhao 2014
+  - Uses latent nodes: Na 2019
+  - Simulataneous clustering &amp; GM estimation: SCAN (Hao 2017), Price 2021
+]
+
+---
+# DiNA Methods Summay (cont'd)
+.small[
+- Non-Gaussian: SPIEC-EASY (Kurtz 2015), pDNA (Zhang 2017)
+- Semi-parametric: Xu 2016
+- Comparison across 3+ groups: BioNetStat (Jardim 2019)
+- Group-wise structure: JMMLE (Majumdar 2022)
+- High dimensional: JointGES (Wang 2020), FUDGE (Zhao 2022)
+- Bayesian: Peterson 2015, Mitra 2016, Tan 2017, Li 2019, Sekula 2022
 ]
 
 ???
@@ -209,19 +221,109 @@ Other model considerations...
     - Incorporating known network structure or latent variables
 
 ---
+# Graphical Lasso (gLasso)
+
+* Because majority of available methods are some variation on gLasso, I'm going to go into the details of the optimization problem and penalty terms here. 
+
+* Convex optimization problem for graphical lasso, where `\(\lambda\)` is a tuning parameter and `\(||\Theta||_1\)` is the sum of absolute values of the elements of `\(\Theta\)`. The solution gives an estimate for `\(\Sigma^{-1}\)`, the precision matrix:
+
+`$$maximize_\Theta\{logdet\Theta - tr(S\Theta) - \lambda||\Theta||_1\}$$`
+* *Graphical lasso* can be used even when `\(p &gt;&gt; n\)`, and when `\(\lambda\)` is large then it forces the estimated precision matrix to be sparse (so few edges!).
+
+* Joint graphical lasso builds upon this by estimating *multiple, related GGMs* from data with observations belonging to distinct classes (for example, cancer vs normal tissue). 
+
+* The idea is to leverage information across the classes while still letting there be class-specific edges. Sparsity and similarity between graphs modified by penalty functions. 
+
+---
+# Notation
+
+* `\(K\)` number of classes 2+.  Index classes using `\(k\)` = 1, ... `\(K\)`. 
+* `\(\Sigma^{-1}_k\)`: True precision matrix for the kth class 
+* `\(Y^{(k)}\)`: `\(n_k\)` x `\(p\)` matrix consisting of `\(n_k\)` observations from the `\(k\)`th class on a set of `\(p\)` features which are common to all `\(K\)` datasets  
+* `\(S^{(k)}\)`: Empirical covariance matrix for `\(Y^{(k)}\)`  
+* `\(\Theta^{(k)}\)`: argument to convex optimization problem used for estimating `\(\Sigma^{-1}_k\)`  
+* Index matrix arguments by using `\(i\)` = 1, ..., `\(p\)` and `\(j\)` = 1, ..., `\(p\)`  
+* `\(\lambda_1\)` and `\(\lambda_2\)`: non-negative tuning parameters used in penalty function
+
+---
+
+# Major assumptions
+
+* We assume the observations **within** each class are iid. 
+* Also assume `\(\mu_k\)`, the mean for each class, is 0. i.e:   
+
+`$$Y^{(k)}_1, ..., Y^{(k)}_{nk} \sim N(0, \Sigma_k)$$`
+
+---
+# Optimization problem for Joint Graphical Lasso
+
+* Our goal is to estimate `\(\Sigma^{-1}_1\)`, ..., `\(\Sigma^{-1}_K\)` by using penalized log-likelihood approach. 
+
+* Again, we want each class to have it's own precision matrix, but to be able to use information across the classes to make them. 
+
+* Seek `\(\hat{\Theta}\)` by solving:
+
+`$$maximize_{\{\Theta\}}\left(\sum^{K}_{k=1}n_k[log\{det(\Theta^{(k)})\}-tr(S^{(k)}\Theta^{(k)}) - P(\{\Theta\})\right)$$`
+
+* A **major innovation of the Danaher 2014 paper**, is the generalization of the optimization problem to multiple classes, in addition to using the penalty function `\(P(\{\Theta\})\)`, for which the authors provide two different versions. 
+
+---
+
+# Penalty functions
+
+* The general form for the penalty function is:
+
+`$$P(\{\Theta\}) = \lambda_1\sum^K_{k=1}\sum_{i \neq j}|\theta^{(k)}_{ij}| + \widetilde{P}\{\Theta\}$$`
+
+* Notice that the `\(P(\{\Theta\})\)` is **not class specific**. It takes information from all the classes!
+
+* The form of this penalty function will encourage the solutions to share certain characteristics such as locations of sparsity or value. 
+
+* Depending on the form we choose and the value of the tuning parameters, we could essentially force joint graphical lasso to just perform unrelated graphical lasso on each of the `\(K\)` classes (i.e. if `\(\widetilde{P}\{\Theta\}\)` is zero.)
+
+* Let's look at the possible forms for `\(\widetilde{P}\{\Theta\}\)`!
+
+---
+
+# Fused Graphical Lasso
+
+* Fused Graphical Lasso (FGL) uses the following penalty function:
+
+`$$P(\{\Theta\}) = \lambda_1\sum^K_{k=1}\sum_{i \neq j}|\theta^{(k)}_{ij}| + \lambda_2\sum_{k&lt;k'}\sum_{i,j}|\theta^{(k)}_{ij}-\theta^{(k')}_{ij}|$$`
+
+* When `\(\lambda_1\)` is **large**, FGL makes sparse estimates of `\(\hat{\Theta}^{(1)}, ... , \hat{\Theta}^{(K)}\)` 
+* When `\(\lambda_2\)` is **large**, many elements of `\(\hat{\Theta}^{(1)}, ... , \hat{\Theta}^{(K)}\)` will be the same across classes  
+* So, FGL "borrows information aggressively across classes, encouraging similar network structure and similar edge values"
+
+---
+
+# Group Graphical Lasso
+
+* Group Graphical Lasso (GGL) uses the following penalty function:
+
+`$$P(\{\Theta\}) = \lambda_1\sum^K_{k=1}\sum_{i \neq j}|\theta^{(k)}_{ij}| + \lambda_2\sum_{i \neq j}\left(\sum_{i,j}{\theta^{(k)}_{ij}}^2\right)^{1/2}$$`
+
+* Lasso penalty applied to elements of the precision matrices  
+* Group lasso penalty is applied to the (i, j) element across all K precision matrices
+* When `\(\lambda_1\)` is **large**, GGL makes sparse estimates of `\(\hat{\Theta}^{(1)}, ... , \hat{\Theta}^{(K)}\)` 
+* So, GGL just encourages a shared pattern of *sparsity*, not shared *edge values* (unlike FGL which encourage sharing across both)
+
+---
+# Other penalty functions
+
+- Here is a selection of penalty functions for comparison. For full treatment see Tsai or Shojaie review papers. 
+
+&lt;img src="penalties.png" width="70%" /&gt;
+
+
+---
 class: inverse, center, middle
 &lt;img src="quantifydif.png" width="80%" /&gt;
----
-
-# Quantifying "difference": Local Structure
-
-&lt;img src="diffnet_localstruc.png" width="90%" /&gt;
 
 ---
+# Some Node Importance Measures
 
-# Quantifying "difference": Global Structure
-
-&lt;img src="diffnet_global_structure.png" width="90%" /&gt;
+&lt;img src="node_importance.png" width="80%" /&gt;
 
 ---
 class: inverse, center, middle
@@ -230,26 +332,17 @@ class: inverse, center, middle
 
 ---
 
-#For evaluating local difference: 
+# Methods &amp; Software for testing
 
-- Can do things like test each node for local structure difference (i.e. test each metabolite for "Degree" or "Node Strength" or "Betweenness Centrality")  
+  - Lichtblau 2017 Compares 10 methods for quantiyfing node-specific differences between groups
+  - Identify pairs of nodes with difference (Ha DINGO 2015, McKenzie DGCA 2016)
+  - Identify subsets (3+) nodes that whose connections are different between groups (Jardim BioNetStat 2019, Arbet PND 2021)
 
 - Various p-value options, e.g. permutation  
 
 - Adjust for multiple testing!! Bonferoni for conservative estimate, FDR for less stringent. 
 
----
 
-# For evaluating global difference:
-
-- Can do visualization (`iGraph`) and describe global structural differences (e.g. Density, modularity)
-
-- Can perform global hypothesis test H0: `\(\Sigma_1 = \Sigma_2\)` vs H1: `\(\Sigma_1 \neq \Sigma_2\)`
-
-- For low-dimensional data this is simpler (e.g. `covTestR` package)
-
-- For high-dimensional data use method proposed by Li &amp; Chen 2012
-    
 
 ---
 
@@ -265,7 +358,8 @@ class: inverse, center, middle
 - I found 26 different R packages and 2 Python packages that implement a variety of subtly different DiNA algorithms/pipelines
 
 
-&lt;img src="timeline.png" width="70%" /&gt;
+&lt;img src="timeline.png" width="60%" /&gt;
+
 ---
 # Notes on software
 
@@ -277,7 +371,7 @@ class: inverse, center, middle
 
 
 ---
-# Placeholder for JGL example
+# JGL
 
 - JGL package runs Fused Graphical Lasso (FGL) and Group Graphical Lasso from Danaher et al 2014
 
@@ -287,39 +381,9 @@ class: inverse, center, middle
 
 - Graphical lasso uses L1 penalty, which encourages sparsity and as a result selects edges in the graph in the process of estimating precision matrix
 
----
-# Placeholder for rags2ridges example
-
-- `rags2ridges` is great for p &gt;&gt;&gt; n settings. Uses L2-penalized estimation of precision matrices
-
-- Useful when classes are believed to share most of the same structure
-
-- Graphical ridge uses L2 penalty which doesn't shrink things down to zero, so you select edges AFTER estimating the precision matrix. Can be useful if there's a lot of colinearity 
-
-- As a side note this package is nicely written with some fun easter eggs hidden in
-
+- (If time allows we can open up my [JGL tutorial](https://mljaniczek.github.io/jgl-tutorial/) for a practical metabolomics example)
 
 ---
-# Placeholder for Spiec-Easy example 
-
-
----
-# Placeholder for iDingo example
-
----
-# Placeholder for iGraph overview
-
----
-
-# Questions for the group
-
-- What do you find helpful in a tutorial or when identifying methods to use? 
-
-- I propose to both use simulated data (under various conditions referenced above) and several real-world datasets with all the software. 
-
----
-
-
 --- 
 # Takeaways
 

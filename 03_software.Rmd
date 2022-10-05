@@ -9,11 +9,12 @@ class: inverse, center, middle
 - I found 26 different R packages and 2 Python packages that implement a variety of subtly different DiNA algorithms/pipelines
 
 
-```{r out.width = '70%', echo = FALSE}
-#![](UMass.png)
+```{r out.width = '60%', echo = FALSE}
+
 knitr::include_graphics("timeline.png")
 
 ```
+
 ---
 # Notes on software
 
@@ -25,7 +26,7 @@ knitr::include_graphics("timeline.png")
 
 
 ---
-# Placeholder for JGL example
+# JGL
 
 - JGL package runs Fused Graphical Lasso (FGL) and Group Graphical Lasso from Danaher et al 2014
 
@@ -35,34 +36,6 @@ knitr::include_graphics("timeline.png")
 
 - Graphical lasso uses L1 penalty, which encourages sparsity and as a result selects edges in the graph in the process of estimating precision matrix
 
----
-# Placeholder for rags2ridges example
-
-- `rags2ridges` is great for p >>> n settings. Uses L2-penalized estimation of precision matrices
-
-- Useful when classes are believed to share most of the same structure
-
-- Graphical ridge uses L2 penalty which doesn't shrink things down to zero, so you select edges AFTER estimating the precision matrix. Can be useful if there's a lot of colinearity 
-
-- As a side note this package is nicely written with some fun easter eggs hidden in
-
-
----
-# Placeholder for Spiec-Easy example 
-
-
----
-# Placeholder for iDingo example
-
----
-# Placeholder for iGraph overview
-
----
-
-# Questions for the group
-
-- What do you find helpful in a tutorial or when identifying methods to use? 
-
-- I propose to both use simulated data (under various conditions referenced above) and several real-world datasets with all the software. 
+- (If time allows we can open up my [JGL tutorial](https://mljaniczek.github.io/jgl-tutorial/) for a practical metabolomics example)
 
 ---
