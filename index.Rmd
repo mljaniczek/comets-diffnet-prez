@@ -3,7 +3,6 @@ title: "Are the networks different?"
 subtitle: "Using Differential Network Analysis Software with Metabolite Data"
 author: "Margaret Janiczek"
 institute: "University of Massachusetts, Amherst <br/> Department of Biostatistics"
-date: "10/11/2022 (updated: `r Sys.Date()`)"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -46,14 +45,7 @@ bib <- ReadBib("./proposal.bib", check = FALSE)
 class: inverse, left, middle
 
 
-
-
-
-# But are the networks different? 
-
-### Using Differential Network Analysis Software with Metabolite Data
-
-#### COMETS Early Career Investigator Group Meeting: October 11, 2022
+# Landscape of Differential Network Analysis Methods & Software
 
 
 #### Margaret Janiczek
@@ -75,6 +67,26 @@ knitr::include_graphics("UMasslong.png")
 #            BSTINPUTS=getwd())
 ```
 
+
+---
+
+# Presentation Overview
+
+- Background on graphical models and differential networks
+
+- Overview of statistical landscape for differential network analysis
+
+- Overview of available software
+
+- Links to practical application using a few software options
+
+- Discussion & feedback!
+
+???
+- My goal is to give you an overview of the statistical and software landscape, as well as a few applied examples. 
+
+- I'm working on a writing a full tutorial geared toward helping applied researchers implement these methods - I look forward to your feedback! 
+
 # Motivation
 
 - Identifying networks in biomedical data, and how they differ across populations, can help find drivers of disease and targets for treatment
@@ -90,24 +102,6 @@ knitr::include_graphics("difnet_overview.png")
     - Microbiome (Crohn's disease vs Healthy Control)
     - Metabolomics - any applications from the group here?
     
----
-
-# Presentation Overview
-
-- Background on graphical models and differential networks
-
-- Overview of statistical landscape for differential network analysis
-
-- Overview of available software
-
-- Brief practical application using a few software options
-
-- Discussion & feedback!
-
-???
-- My goal is to give you an overview of the statistical and software landscape, as well as a few applied examples. 
-
-- I'm working on a writing a full tutorial geared toward helping applied researchers implement these methods - I look forward to your feedback! 
 
 ---
 
@@ -122,7 +116,7 @@ knitr::include_graphics("graph.png")
 ```
 
 
-- Connected edges can be seen in an **Adjacency Matrix**, where anything with a zero is considered "conditionally independent"
+- Connected edges can be seen in an **Adjacency Matrix**, where anything with a zero is considered "conditionally independent", and anything with a 1 is considered "conditionally dependent"
 
 - In this example, A and B are **conditionally independent** of D
 
@@ -133,18 +127,17 @@ knitr::include_graphics("graph.png")
 
 - Gaussian Graphical Models (GGMs) are the most widely used probabilistic graphical models (See Kate Shutta's recently published tutorial on GGMs for full details! `r Cite(bib, "shutta_balasubramanian_tutorial")`)
 
-- Assume data $\mathbf{x}$ is distributed as multivariate Gaussian $N(\mu, \Sigma)$ with mean vector $\mathbf{\mu}$ and precision matrix $\Sigma^{-1} = \Theta$ whose entries correspond to partial correlation between variables
+- Assume data $\mathbf{y}$ is distributed as multivariate Gaussian $N(\mu, \Sigma)$ with mean vector $\mathbf{\mu}$ and precision matrix $\Sigma^{-1} = \Omega$ whose entries correspond to partial correlation between variables
 
-- So any two entries are conditionally independent if entry in $\Theta$ is zero. 
+- So any two entries are conditionally independent if entry in $\Omega$ is zero. 
 
-- In low dimensional seeting, the Likelihood function:
+- In low dimensional setting, the Likelihood function:
 
-  $$l(\Theta; S) = ln|\Theta| - tr(S\Theta)$$
+  $$l(\Omega; S) = ln|\Omega| - tr(S\Omega)$$
 
-- Where $\Theta = \Sigma^{-1}$ is the "precision matrix" and $S$ is sample covariance matrix. 
+- Where $\Omega = \Sigma^{-1}$ is the "precision matrix" and $S$ is sample covariance matrix. 
 
-- We want an estimate for this which we will call $P = S^{-1}$
-
+- We want an estimate for this which we will call $P = S^{-1}$. This will give us the graph structure.
 
 ---
 
@@ -203,9 +196,13 @@ knitr::include_graphics("diffnet.png")
 ---
 # Thank you!
 
-- Dr. Raji Balasubramanian & [Balasubramanian Lab](https://raji-lab.github.io/)
+- Dr. Raji Balasubramanian 
+
+- Members of [Balasubramanian Lab](https://raji-lab.github.io/)
 
 - Dr. Kate Hoff Shutta
+
+- Dr. Zehang Richard Li
 
 
 

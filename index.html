@@ -21,14 +21,7 @@
 class: inverse, left, middle
 
 
-
-
-
-# But are the networks different? 
-
-### Using Differential Network Analysis Software with Metabolite Data
-
-#### COMETS Early Career Investigator Group Meeting: October 11, 2022
+# Landscape of Differential Network Analysis Methods &amp; Software
 
 
 #### Margaret Janiczek
@@ -41,6 +34,26 @@ PhD Student, Biostatistics
 ---
 
 
+
+
+---
+
+# Presentation Overview
+
+- Background on graphical models and differential networks
+
+- Overview of statistical landscape for differential network analysis
+
+- Overview of available software
+
+- Links to practical application using a few software options
+
+- Discussion &amp; feedback!
+
+???
+- My goal is to give you an overview of the statistical and software landscape, as well as a few applied examples. 
+
+- I'm working on a writing a full tutorial geared toward helping applied researchers implement these methods - I look forward to your feedback! 
 
 # Motivation
 
@@ -55,24 +68,6 @@ PhD Student, Biostatistics
     - Microbiome (Crohn's disease vs Healthy Control)
     - Metabolomics - any applications from the group here?
     
----
-
-# Presentation Overview
-
-- Background on graphical models and differential networks
-
-- Overview of statistical landscape for differential network analysis
-
-- Overview of available software
-
-- Brief practical application using a few software options
-
-- Discussion &amp; feedback!
-
-???
-- My goal is to give you an overview of the statistical and software landscape, as well as a few applied examples. 
-
-- I'm working on a writing a full tutorial geared toward helping applied researchers implement these methods - I look forward to your feedback! 
 
 ---
 
@@ -83,7 +78,7 @@ PhD Student, Biostatistics
 &lt;img src="graph.png" width="70%" /&gt;
 
 
-- Connected edges can be seen in an **Adjacency Matrix**, where anything with a zero is considered "conditionally independent"
+- Connected edges can be seen in an **Adjacency Matrix**, where anything with a zero is considered "conditionally independent", and anything with a 1 is considered "conditionally dependent"
 
 - In this example, A and B are **conditionally independent** of D
 
@@ -94,18 +89,17 @@ PhD Student, Biostatistics
 
 - Gaussian Graphical Models (GGMs) are the most widely used probabilistic graphical models (See Kate Shutta's recently published tutorial on GGMs for full details! &lt;a name=cite-shutta_balasubramanian_tutorial&gt;&lt;/a&gt;[[Shu+22](#bib-shutta_balasubramanian_tutorial)])
 
-- Assume data `\(\mathbf{x}\)` is distributed as multivariate Gaussian `\(N(\mu, \Sigma)\)` with mean vector `\(\mathbf{\mu}\)` and precision matrix `\(\Sigma^{-1} = \Theta\)` whose entries correspond to partial correlation between variables
+- Assume data `\(\mathbf{y}\)` is distributed as multivariate Gaussian `\(N(\mu, \Sigma)\)` with mean vector `\(\mathbf{\mu}\)` and precision matrix `\(\Sigma^{-1} = \Omega\)` whose entries correspond to partial correlation between variables
 
-- So any two entries are conditionally independent if entry in `\(\Theta\)` is zero. 
+- So any two entries are conditionally independent if entry in `\(\Omega\)` is zero. 
 
-- In low dimensional seeting, the Likelihood function:
+- In low dimensional setting, the Likelihood function:
 
-  `$$l(\Theta; S) = ln|\Theta| - tr(S\Theta)$$`
+  `$$l(\Omega; S) = ln|\Omega| - tr(S\Omega)$$`
 
-- Where `\(\Theta = \Sigma^{-1}\)` is the "precision matrix" and `\(S\)` is sample covariance matrix. 
+- Where `\(\Omega = \Sigma^{-1}\)` is the "precision matrix" and `\(S\)` is sample covariance matrix. 
 
-- We want an estimate for this which we will call `\(P = S^{-1}\)`
-
+- We want an estimate for this which we will call `\(P = S^{-1}\)`. This will give us the graph structure.
 
 ---
 
@@ -145,7 +139,7 @@ class: inverse, center, middle
 
 - The wide variety is due to addressing many subtly different problems
 
-&lt;img src="alg_timeline.png" width="100%" /&gt;
+&lt;img src="alg_timeline2.png" width="100%" /&gt;
 
 ???
 - In 2011, Guo et al. published the work “Joint estimation of multiple graphs” &lt;a name=cite-guo_joint_2011&gt;&lt;/a&gt;[[Guo+11](#bib-guo_joint_2011)], which was followed by several new methods to estimate and test differences in biological networks &lt;a name=cite-cai_constrained_2011&gt;&lt;/a&gt;[[CLL11](#bib-cai_constrained_2011)] &lt;a name=cite-mohan_structured_2012&gt;&lt;/a&gt;[[Moh+12](#bib-mohan_structured_2012)] &lt;a name=cite-jacob_more_2012&gt;&lt;/a&gt;[[JND12](#bib-jacob_more_2012)]
@@ -190,7 +184,7 @@ Other model considerations...
   - Group-wise heterogeneous structure: LASICH (Saegusa 2016)
   - Direct estimation of difference: Zhao 2014
   - Uses latent nodes: Na 2019
-  - Simulataneous clustering &amp; GM estimation: SCAN (Hao 2017), Price 2021
+  - Simultaneous clustering &amp; GM estimation: SCAN (Hao 2017), Price 2021
 ]
 
 ---
@@ -239,7 +233,7 @@ Other model considerations...
 
 * `\(K\)` number of classes 2+.  Index classes using `\(k\)` = 1, ... `\(K\)`. 
 * `\(\Sigma^{-1}_k\)`: True precision matrix for the kth class 
-* `\(Y^{(k)}\)`: `\(n_k\)` x `\(p\)` matrix consisting of `\(n_k\)` observations from the `\(k\)`th class on a set of `\(p\)` features which are common to all `\(K\)` datasets  
+* `\(Y^{(k)}\)`: `\(n_k\)` x `\(p\)` matrix consisting of `\(n_k\)` observations from the `\(k\)`th class on a set of `\(p\)` features which are common to all `\(K\)` data sets  
 * `\(S^{(k)}\)`: Empirical covariance matrix for `\(Y^{(k)}\)`  
 * `\(\Theta^{(k)}\)`: argument to convex optimization problem used for estimating `\(\Sigma^{-1}_k\)`  
 * Index matrix arguments by using `\(i\)` = 1, ..., `\(p\)` and `\(j\)` = 1, ..., `\(p\)`  
@@ -315,6 +309,126 @@ Other model considerations...
 
 &lt;img src="penalties.png" width="70%" /&gt;
 
+---
+# Bayesian Inference of Multiple GGMs
+
+* Peterson, Stingo, and Vannucci (2015) offer an alternative Bayesian approach.
+
+* They use Markov random field (MRF) prior which encourages common structures across groups, but does not assume that all subgroups are related
+
+* Place a spike-and-slab prior on parameters that measure network relatedness in an effort to learn which groups have a shared graph structure
+
+* Posterior probabilities of inclusion for those parameters summarize the network similarity.
+
+---
+# Intuition behind spike-and-slab prior
+
+&lt;img src="priors.png" width="90%" /&gt;
+
+---
+# Intuition behind spike-and-slab prior
+
+&lt;img src="prior_spike.png" width="90%" /&gt;
+
+---
+# Notation
+
+* `\(K\)` number of classes 2+.  Index classes using `\(k\)` = 1, ... `\(K\)`. 
+* `\(\Sigma^{-1}_k\)`: True precision matrix for the kth class 
+* `\(Y^{(k)}\)`: `\(n_k\)` x `\(p\)` matrix consisting of `\(n_k\)` observations from the `\(k\)`th class on a set of `\(p\)` features which are common to all `\(K\)` data sets. `\(n_k\)` need not be identical size.  
+* `\(S^{(k)}\)`: Empirical covariance matrix for `\(Y^{(k)}\)`  
+* `\(\Omega^{(k)}\)`: symmetric positive definite matrix constrained by a graph `\(G_k\)`
+* `\(\mathbf{g}_{ij}\)`: Binary vector representing inclusion of edge (i, j) in graphs 1, ..., K.
+* Index matrix arguments by using `\(i\)` = 1, ..., `\(p\)` and `\(j\)` = 1, ..., `\(p\)`  
+
+---
+
+# Markov Random Field Prior
+
+Probability of the binary vector of edge inclusion indicators `\(\mathbf{g}_{ij}\)` given by:
+
+`$$p(\mathbf{g}_{ij}|v_{ij}, \Theta) = C(v_{ij}, \Theta)^{-1}exp(v_{ij}\mathbf{1}^Tg_{ij}+\mathbf{g}_{ij}^T\Theta\mathbf{g}_{ij})$$`
+
+* `\(\mathbf{1}\)`: unit vector of dimension K
+* `\(v_{ij}\)` is a parameter specific to each set of edges `\(\mathbf{g}_{ij}\)`
+* `\(\Theta\)` is a KxK symmetric matrix representing pairwise relatedness of the graphs for each sample group. 
+  * Diagonals are zero, off-diagonals which are non-zero represent connections between related networks.
+* `\(C(v_{ij}, \Theta)\)`: Normalizing constant
+---
+
+# MRF continued
+
+So, prior probability that edge (i, j) is absent from all K graphs is: 
+
+`$$p(\mathbf{g}_{ij} = 0|v_{ij}, \Theta) = 1/C(v_{ij}, \Theta)$$`
+* Joint prior on graphs is product of densities for each edge:
+
+`$$p(G_1, ...G_K|v, \Theta) = \prod_{i&lt;j}p(\mathbf{g}_{ij} = 0|v_{ij}, \Theta)$$`
+Conditional probability of the inclusion of edge in `\(G_k\)`, given inclusion of edge in remaining graphs, is:
+
+`$$p(g_{k,ij}|{g_{m,ij}}_{m\neq k}, v_{ij}, \Theta) = \frac{exp(g_{k,ij}(v_{ij}+2\sum_{m\neq k}\theta_{km}g_{m,ij}))}{1+exp(v_{ij}+2\sum_{m\neq k}\theta_{km}g_{m,ij})}$$`
+
+---
+# Selection prior on network similarity 
+
+Impose priors on `\(v\)` and `\(\Theta\)` to reduce false selection of edges.
+
+* Use spike-and-slab prior on the off-diagonal entries of `\(\Theta\)`: `\(\theta_{km}\)`
+  * "Slab" portion defined on positive domain
+  * Appropriate choice is `\(Gamma(x|\alpha, \beta)\)` with `\(\alpha &gt; 1\)`
+  * So mixture prior on `\(\theta_{km}\)` is `\(p(\theta_{km}|\gamma_{km})\)`
+  * Joint prior on off-diagonal entries is product of marginal densities:
+    * `\(p(\Theta|\gamma) = \prod_{k&lt;m}p(\theta_{km}|\gamma_{km})\)`
+  * Place Bernoulli prior on latent indicators
+
+---
+# Edge-specific informative prior on v
+
+* Given a known reference network `\(G_0\)`, define a prior that encourages higher selection probabilities for edges included in `\(G_0\)`.
+
+* Impose a prior on probability of inclusion in edge in `\(G_k\)` which reflects belief that it is similar to the reference network. Use Beta(a,b) prior. 
+
+* In cases where no prior knowledge on graph structure, use a prior that favors lower values such as Beta(1, 4) to encourage overall sparsity.
+
+---
+
+# Joint Posterior
+
+* Joint posterior given `\(\Psi\)` is set of all parameters and `\(X\)` is observed data for all groups:
+
+
+&lt;img src="Spike_And_Slab.png" width="90%" /&gt;
+
+???
+`\(p(\Psi|X) \propto \prod_{k=1}^K[p(X_k|\mu_k,\Omega_k)p(\mu_k|\Omega_k)p(\Omega_k|G_k)]\prod_{i&lt;j}[p(g_{ij}|v_{ij}, \Theta)p(v_{ij})]p(\Theta|\gamma)p(\gamma)\)`
+
+---
+# MCMC Sampling
+
+* Since posterior distribution is analytically intractable, construct Markov chain Monte Carlo (MCMC) sampler to obtain a posterior sample of the parameters of interest.
+  * At iteration t:
+    * Update graph `\(G_k^{(t)}\)` and precision matrix `\(\Omega_k^{(t)}\)` for each group k = 1, ..., K
+    * Update parameters for network relatedness `\(\theta_{km}^t\)` and `\(\gamma_{km}^t\)` for 
+`\(1 \leq k &lt; m \leq K\)`
+    * Update edge-specific parameters `\(v_{ij}^{(t)}\)` for `\(1 \leq i &lt; j \leq p\)`
+    
+---
+# Other Bayesian methods for inferring multiple GGMs
+
+* Method for non-normal and mixed discrete continuous 'omic data (Bhadra 2018)
+
+* Bayesian counterpart of JGL with simultaneous shrinkage and model selection (Li 2019)
+
+* Multi-layered genomic networks - good for when you have multiple data types/hierarchical structure (Ha 2020) 
+
+* Hierarchical Bayesian factor model for count data (good for single-cell differential network analysis) (Sekula 2021)
+
+---
+# Takeaway from methods landscape
+
+* There are many available methods to jointly estimate multiple graphical models
+
+* Choice of method depends on your data type, goal of analysis, and ease of implementation (more on that in software section)
 
 ---
 class: inverse, center, middle
@@ -334,13 +448,15 @@ class: inverse, center, middle
 
 # Methods &amp; Software for testing
 
-  - Lichtblau 2017 Compares 10 methods for quantiyfing node-specific differences between groups
+  - Lichtblau 2017 Compares 10 methods for quantifying node-specific differences between groups
   - Identify pairs of nodes with difference (Ha DINGO 2015, McKenzie DGCA 2016)
   - Identify subsets (3+) nodes that whose connections are different between groups (Jardim BioNetStat 2019, Arbet PND 2021)
 
 - Various p-value options, e.g. permutation  
 
 - Adjust for multiple testing!! Bonferoni for conservative estimate, FDR for less stringent. 
+
+- For Bayesian methods: posterior mean and `\(100(1-\alpha)\%\)` Credible Interval for each gene-gene pair correlation difference are obtained from the posterior. (Sekula 2022)
 
 
 
@@ -358,7 +474,7 @@ class: inverse, center, middle
 - I found 26 different R packages and 2 Python packages that implement a variety of subtly different DiNA algorithms/pipelines
 
 
-&lt;img src="timeline.png" width="60%" /&gt;
+&lt;img src="timeline2.png" width="80%" /&gt;
 
 ---
 # Notes on software
@@ -368,6 +484,10 @@ class: inverse, center, middle
 - I have a full tutorial for `JGL` posted on my [GitHub](https://mljaniczek.github.io/jgl-tutorial/), and Kate has one available for `iDingo`. 
 
 - Currently working making tutorials for for `rags2ridges`, `Spiec-Easy` and will work through the other available methods
+
+- For implementation in Python, see my repository: https://github.com/mljaniczek/diff_net_python which contains scripts on running sparse inverse covariance estimation methods in Python (Graphical Lasso and Ledoit-Wolf shrinkage methods).
+
+- Bayesian methods: I am working on the `spikeyglass` package which implements Li's 2019 method for Bayesian Joint Spike-and-Slab Graphical Lasso. The `scSFMnet` package is also available for Sekula 2022 method for hierarchical Bayesian factor model, which can be used on zero-inflated count data. 
 
 
 ---
@@ -401,9 +521,13 @@ class: inverse, center, middle
 ---
 # Thank you!
 
-- Dr. Raji Balasubramanian &amp; [Balasubramanian Lab](https://raji-lab.github.io/)
+- Dr. Raji Balasubramanian 
+
+- Members of [Balasubramanian Lab](https://raji-lab.github.io/)
 
 - Dr. Kate Hoff Shutta
+
+- Dr. Zehang Richard Li
 
 
 

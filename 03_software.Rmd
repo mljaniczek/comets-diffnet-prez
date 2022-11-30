@@ -9,9 +9,9 @@ class: inverse, center, middle
 - I found 26 different R packages and 2 Python packages that implement a variety of subtly different DiNA algorithms/pipelines
 
 
-```{r out.width = '60%', echo = FALSE}
+```{r out.width = '80%', echo = FALSE}
 
-knitr::include_graphics("timeline.png")
+knitr::include_graphics("timeline2.png")
 
 ```
 
@@ -23,6 +23,10 @@ knitr::include_graphics("timeline.png")
 - I have a full tutorial for `JGL` posted on my [GitHub](https://mljaniczek.github.io/jgl-tutorial/), and Kate has one available for `iDingo`. 
 
 - Currently working making tutorials for for `rags2ridges`, `Spiec-Easy` and will work through the other available methods
+
+- For implementation in Python, see my repository: https://github.com/mljaniczek/diff_net_python which contains scripts on running sparse inverse covariance estimation methods in Python (Graphical Lasso and Ledoit-Wolf shrinkage methods).
+
+- Bayesian methods: I am working on the `spikeyglass` package which implements Li's 2019 method for Bayesian Joint Spike-and-Slab Graphical Lasso. The `scSFMnet` package is also available for Sekula 2022 method for hierarchical Bayesian factor model, which can be used on zero-inflated count data. 
 
 
 ---
