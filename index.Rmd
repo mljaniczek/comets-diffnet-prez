@@ -10,9 +10,23 @@ output:
     seal: false
     nature:
       highlightStyle: github
+      ratio: '16:9'
       highlightLines: true
       countIncrementalSlides: false
 ---
+class: inverse, left, middle
+
+
+# Landscape of Differential Network Analysis Methods & Software
+
+
+#### Margaret Janiczek, MS
+
+PhD Student, Biostatistics
+
+```{r out.width = '25%', echo = FALSE}
+knitr::include_graphics("UMasslong.png")
+```
 
 
 ```{r setup, include=FALSE}
@@ -42,22 +56,6 @@ BibOptions(check.entries = FALSE,
 bib <- ReadBib("./proposal.bib", check = FALSE)
 ```
 
-class: inverse, left, middle
-
-
-# Landscape of Differential Network Analysis Methods & Software
-
-
-#### Margaret Janiczek
-
-PhD Student, Biostatistics
-
-```{r out.width = '25%', echo = FALSE}
-knitr::include_graphics("UMasslong.png")
-```
-
-
----
 
 ```{r echo = FALSE }
 
@@ -193,21 +191,39 @@ knitr::include_graphics("diffnet.png")
 ---
 # Questions & Comments?
 
+- What would you find useful in an applied tutorial? 
+
+- Any methods you use/come across that I haven't mentioned? 
+
+- Other questions/comments?
+
 ---
 # Thank you!
 
-- Dr. Raji Balasubramanian 
+- Dr. Raji Balasubramanian for mentorship and the metabolomics data, which was previously presented at ENAR 2021 with Dr. Denise Scholtens. 
 
-- Members of [Balasubramanian Lab](https://raji-lab.github.io/)
+- Members of [Balasubramanian Lab](https://raji-lab.github.io/) for helpful feedback on this research and presentation
 
-- Dr. Kate Hoff Shutta
+- Thank you to Dr. Kate Hoff Shutta and Dr. Yukun Li who provided code for the beautiful circular network graphs. (And Kate for inviting me to present here!)
 
-- Dr. Zehang Richard Li
+- Dr. Zehang Richard Li for providing SSJGL scripts and encouragement for R package creation!  
 
 
 
-.small[.footnote[Github: @mljaniczek <br> Website: mljaniczek.github.io/ <br> Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).]]
+.small[.footnote[Github: @mljaniczek <br> Website: mljaniczek.github.io/]]
 
+---
+
+# R tools used in analysis
+
+* [spikeyglass](https://mljaniczek.github.io/spikeyglass/) for running SSJGL
+* [igraph](https://igraph.org/): for plotting network graphs  
+* [JGL](https://cran.r-project.org/package=JGL): for running JGL 
+* [tidyverse](https://www.tidyverse.org/): for data wrangling   
+* [RColorBrewer](https://cran.r-project.org/package=RColorBrewer): for pretty color palettes
+* pheatmap: My favorite heatmap package, makes the heatmaps with annotated tracks
+(See this [blog post](https://davetang.org/muse/2018/05/15/making-a-heatmap-in-r-with-the-pheatmap-package/) by Dave Tang for a nice tutorial on using this package.)
+* Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
 
 ---
 # References
@@ -215,6 +231,4 @@ knitr::include_graphics("diffnet.png")
 ```{r, results='asis', echo=FALSE, warning=FALSE}
 PrintBibliography(bib)
 ```
-
-
 

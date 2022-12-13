@@ -9,6 +9,8 @@ class: inverse, center, middle
 
 - The wide variety is due to addressing many subtly different problems
 
+---
+
 ```{r out.width = '100%', echo = FALSE}
 knitr::include_graphics("alg_timeline2.png")
 ```
@@ -24,19 +26,16 @@ knitr::include_graphics("alg_timeline2.png")
 
 ---
 # Why so many methods?
-
-To address various data and modeling situations!
---
 .pull-left[
 What's your data like?
-```{r out.width = '70%', echo = FALSE}
+```{r out.width = '60%', echo = FALSE}
 knitr::include_graphics("proscons.png")
 ```
 ]
 
 .pull-right[
 Other model considerations...
-```{r out.width = '70%',echo = FALSE}
+```{r out.width = '60%',echo = FALSE}
 knitr::include_graphics("specifications.png")
 ```
 ]
@@ -178,130 +177,57 @@ $$P(\{\Theta\}) = \lambda_1\sum^K_{k=1}\sum_{i \neq j}|\theta^{(k)}_{ij}| + \lam
 * When $\lambda_1$ is **large**, GGL makes sparse estimates of $\hat{\Theta}^{(1)}, ... , \hat{\Theta}^{(K)}$ 
 * So, GGL just encourages a shared pattern of *sparsity*, not shared *edge values* (unlike FGL which encourage sharing across both)
 
----
-# Other penalty functions
-
-- Here is a selection of penalty functions for comparison. For full treatment see Tsai or Shojaie review papers. 
-
-```{r out.width = '70%', echo = FALSE}
-knitr::include_graphics("penalties.png")
-```
 
 ---
-# Bayesian Inference of Multiple GGMs
+# Takeaways: Frequentist joint graphical model estimation
 
-* Peterson, Stingo, and Vannucci (2015) offer an alternative Bayesian approach.
+- Most popular method: Joint Graphical Lasso (JGL) `r Cite(bib, "guo_joint_2011")`, which was improved upon by Fused Graphical Lasso (FGL) and Group Graphical Lasso (GGL) `r Cite(bib, "danaher_joint_2014")` which are all penalized regression methods
 
-* They use Markov random field (MRF) prior which encourages common structures across groups, but does not assume that all subgroups are related
+- Penalized regression methods encourage off-diagonal elements of estimated precision matrix to share patterns of sparsity while allowing group-specific differences, depending on penalty
 
-* Place a spike-and-slab prior on parameters that measure network relatedness in an effort to learn which groups have a shared graph structure
+- BUT: These methods are highly sensitive to choice of penalty parameter. 
 
-* Posterior probabilities of inclusion for those parameters summarize the network similarity.
-
----
-# Intuition behind spike-and-slab prior
-
-```{r out.width = '90%',echo = FALSE}
-knitr::include_graphics("priors.png")
-```
+- Need to use method like cross validation (CV) to tune penalty parameters.
+  - They tend to favor large models when based on AIC
+  - Suffer from overall global shrinkage of estimates
+  
+- For full treatment of frequentist methods and penalty functions, see Tsai `r Cite(bib, "tsai_joint_nodate")`) or Shojaie `r Cite(bib, "shojaie_differential_2021")` review papers. 
 
 ---
-# Intuition behind spike-and-slab prior
+# Bayesian joint graphical model estimation overview
 
-```{r out.width = '90%',echo = FALSE}
-knitr::include_graphics("prior_spike.png")
-```
+- Bayesian methods aim to improve upon some of the frequentist shortcomings
 
----
-# Notation
+- Bayesian extensions often rely on Markov chain Monte Carlo (MCMC) algorithms which can be computationally prohibitive for high-dimensional biological settings
 
-* $K$ number of classes 2+.  Index classes using $k$ = 1, ... $K$. 
-* $\Sigma^{-1}_k$: True precision matrix for the kth class 
-* $Y^{(k)}$: $n_k$ x $p$ matrix consisting of $n_k$ observations from the $k$th class on a set of $p$ features which are common to all $K$ data sets. $n_k$ need not be identical size.  
-* $S^{(k)}$: Empirical covariance matrix for $Y^{(k)}$  
-* $\Omega^{(k)}$: symmetric positive definite matrix constrained by a graph $G_k$
-* $\mathbf{g}_{ij}$: Binary vector representing inclusion of edge (i, j) in graphs 1, ..., K.
-* Index matrix arguments by using $i$ = 1, ..., $p$ and $j$ = 1, ..., $p$  
+- To improve on these limitations, Li, McCormick, and Clark proposed Bayesian spike-and-slab joint graphical lasso (SSJGL) `r Cite(bib, "richard_li_bayesian_2019")`
+  - Provide Bayesian formulations of FGL and GGL called DSS-FGL and DSS-GGL ("Doubly spike-and-slab fused/group graphical lasso")
 
----
+- Spike-and-slab prior encourages sparsity on off-diagonal elements that are close to zero but is flat for non-zero elements (helps with global shrinkage problem)
 
-# Markov Random Field Prior
-
-Probability of the binary vector of edge inclusion indicators $\mathbf{g}_{ij}$ given by:
-
-$$p(\mathbf{g}_{ij}|v_{ij}, \Theta) = C(v_{ij}, \Theta)^{-1}exp(v_{ij}\mathbf{1}^Tg_{ij}+\mathbf{g}_{ij}^T\Theta\mathbf{g}_{ij})$$
-
-* $\mathbf{1}$: unit vector of dimension K
-* $v_{ij}$ is a parameter specific to each set of edges $\mathbf{g}_{ij}$
-* $\Theta$ is a KxK symmetric matrix representing pairwise relatedness of the graphs for each sample group. 
-  * Diagonals are zero, off-diagonals which are non-zero represent connections between related networks.
-* $C(v_{ij}, \Theta)$: Normalizing constant
----
-
-# MRF continued
-
-So, prior probability that edge (i, j) is absent from all K graphs is: 
-
-$$p(\mathbf{g}_{ij} = 0|v_{ij}, \Theta) = 1/C(v_{ij}, \Theta)$$
-* Joint prior on graphs is product of densities for each edge:
-
-$$p(G_1, ...G_K|v, \Theta) = \prod_{i<j}p(\mathbf{g}_{ij} = 0|v_{ij}, \Theta)$$
-Conditional probability of the inclusion of edge in $G_k$, given inclusion of edge in remaining graphs, is:
-
-$$p(g_{k,ij}|{g_{m,ij}}_{m\neq k}, v_{ij}, \Theta) = \frac{exp(g_{k,ij}(v_{ij}+2\sum_{m\neq k}\theta_{km}g_{m,ij}))}{1+exp(v_{ij}+2\sum_{m\neq k}\theta_{km}g_{m,ij})}$$
-
----
-# Selection prior on network similarity 
-
-Impose priors on $v$ and $\Theta$ to reduce false selection of edges.
-
-* Use spike-and-slab prior on the off-diagonal entries of $\Theta$: $\theta_{km}$
-  * "Slab" portion defined on positive domain
-  * Appropriate choice is $Gamma(x|\alpha, \beta)$ with $\alpha > 1$
-  * So mixture prior on $\theta_{km}$ is $p(\theta_{km}|\gamma_{km})$
-  * Joint prior on off-diagonal entries is product of marginal densities:
-    * $p(\Theta|\gamma) = \prod_{k<m}p(\theta_{km}|\gamma_{km})$
-  * Place Bernoulli prior on latent indicators
-
----
-# Edge-specific informative prior on v
-
-* Given a known reference network $G_0$, define a prior that encourages higher selection probabilities for edges included in $G_0$.
-
-* Impose a prior on probability of inclusion in edge in $G_k$ which reflects belief that it is similar to the reference network. Use Beta(a,b) prior. 
-
-* In cases where no prior knowledge on graph structure, use a prior that favors lower values such as Beta(1, 4) to encourage overall sparsity.
-
----
-
-# Joint Posterior
-
-* Joint posterior given $\Psi$ is set of all parameters and $X$ is observed data for all groups:
-
-
-```{r out.width = '90%',echo = FALSE}
-knitr::include_graphics("Spike_And_Slab.png")
-```
+- To scale to higher dimensions, SSJGL uses an Expectation-Maximization (EM) algorithm approach for posterior mode estimation
 
 ???
-$p(\Psi|X) \propto \prod_{k=1}^K[p(X_k|\mu_k,\Omega_k)p(\mu_k|\Omega_k)p(\Omega_k|G_k)]\prod_{i<j}[p(g_{ij}|v_{ij}, \Theta)p(v_{ij})]p(\Theta|\gamma)p(\gamma)$
 
----
-# MCMC Sampling
+  - This is a nice little [easy-to-read-blog post](http://www.batisengul.co.uk/post/spike-and-slab-bayesian-linear-regression-with-variable-selection/) on spike-and-slab priors
 
-* Since posterior distribution is analytically intractable, construct Markov chain Monte Carlo (MCMC) sampler to obtain a posterior sample of the parameters of interest.
-  * At iteration t:
-    * Update graph $G_k^{(t)}$ and precision matrix $\Omega_k^{(t)}$ for each group k = 1, ..., K
-    * Update parameters for network relatedness $\theta_{km}^t$ and $\gamma_{km}^t$ for 
-$1 \leq k < m \leq K$
-    * Update edge-specific parameters $v_{ij}^{(t)}$ for $1 \leq i < j \leq p$
-    
+- Method allows for simultaneous model selection and parameter estimation
+
+- Provide Bayesian formulations of FGL and GGL called DSS-FGL and DSS-GGL
+
+EM algorithm:
+- According to BDA: "In problems with many parameters, normal approximations to the joint distributions are often useless, and the jointe mode is typically not helpful"
+
+- In these cases is it useful to base an approximation on a marginal posterior mode of a subset of parameters
+
+- Expectation-Maximization (EM) algorithm can be viewed as iterative method for finding the mode of the marginal posterior density
+
+- Example 22.2 in the BDA book was very helpful in understanding! 
+
 ---
 # Other Bayesian methods for inferring multiple GGMs
 
 * Method for non-normal and mixed discrete continuous 'omic data (Bhadra 2018)
-
-* Bayesian counterpart of JGL with simultaneous shrinkage and model selection (Li 2019)
 
 * Multi-layered genomic networks - good for when you have multiple data types/hierarchical structure (Ha 2020) 
 
@@ -336,7 +262,7 @@ class: inverse, center, middle
 
 # Methods & Software for testing
 
-  - Lichtblau 2017 Compares 10 methods for quantifying node-specific differences between groups
+  - Lichtblau 2017 Compares 10 methods for quantifying node-specific differences between groups `r Cite(bib, "lichtblau_comparative_2017")`
   - Identify pairs of nodes with difference (Ha DINGO 2015, McKenzie DGCA 2016)
   - Identify subsets (3+) nodes that whose connections are different between groups (Jardim BioNetStat 2019, Arbet PND 2021)
 
